@@ -1,19 +1,13 @@
 
 from flask import Blueprint, request, jsonify
 from services.band_service import BandService
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-from models.band_model import Base
-
-# Configuración de la base de datos (ajustar según entorno real)
-engine = create_engine('sqlite:///bands.db')
-Session = sessionmaker(bind=engine)
-Base.metadata.create_all(engine)
-
 band_bp =Blueprint('band_bp',__name__)
 
-# Instancia global de servicio para simplificar el ejemplo (en producción usar contexto de app)
-service = BandService(Session())
+# Importar la sesión de la base de datos desde config/database.py
+from config.database import get_db_session
+
+# Instancia global de servicio (en producción usar contexto de app o request)
+service = BandService(get_db_session())
 
 band_bp =Blueprint('band_bp',__name__)
 
