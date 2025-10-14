@@ -1,25 +1,25 @@
-# Imagen base ligera
-FROM python:3.11-slim
+# Dockerfile - imagen ligera para Flask
+FROM python:3.12-slim
 
-# Directorio de trabajo dentro del contenedor
-WORKDIR /src
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Copia todo el contenido del proyecto
-COPY . .
+WORKDIR /app
 
-# Crea el directorio de base de datos y asigna permisos
-RUN mkdir -p /src/data && chmod 777 /src/data
+# dependencias del SO para algunas librerías (si usas mysqlclient etc)
+RUN apt-get update && apt-get install -y build-essential gcc libpq-dev --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
-# Instala dependencias
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Establece variables de entorno
-ENV FLASK_APP=main.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_ENV=development
+# copiar código
+COPY . .
 
-# Expone el puerto Flask
+# entrypoint para inicializar BD y correr la app
+RUN chmod +x ./entrypoint.sh
+
 EXPOSE 5000
 
-# Comando para ejecutar la aplicación
-CMD ["flask", "run", "--host=0.0.0.0"]
+ENTRYPOINT ["./entrypoint.sh"]
+
