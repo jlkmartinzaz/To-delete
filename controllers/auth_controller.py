@@ -1,34 +1,58 @@
 from flask import Blueprint, request, jsonify
-from models import db, User
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from models.auth_model import User
+from models import db
+import datetime
 
 auth_bp = Blueprint("auth_bp", __name__)
-
-@auth_bp.route("/test", methods=["GET"])
-def test_auth():
-    return jsonify({"message": "Auth working!"}), 200
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
 
-    # Validar datos
-    if not data or "email" not in data or "password" not in data:
-        return jsonify({"error": "Email and password are required"}), 400
+    if not email or not password:
+        return jsonify({"error": "Email y contraseña son obligatorios"}), 400
 
-    # Revisar si ya existe el usuario
-    if User.query.filter_by(email=data["email"]).first():
-        return jsonify({"error": "User already exists"}), 409
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "El usuario ya existe"}), 400
 
-    # Crear usuario nuevo
-    new_user = User(email=data["email"], password=data["password"])
+    new_user = User(email=email)
+    new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
 
-    # Generar token opcional
-    access_token = create_access_token(identity=new_user.email)
+    return jsonify({"message": "Usuario registrado correctamente"}), 201
+
+
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Credenciales inválidas"}), 401
+
+    expires = datetime.timedelta(hours=1)
+    token = create_access_token(
+        identity=str(user.id),
+        additional_claims={"role": user.role},
+        expires_delta=expires
+    )
 
     return jsonify({
-        "message": "User created!",
-        "access_token": access_token
-    }), 201
+        "access_token": token,
+        "user": {"email": user.email, "role": user.role}
+    }), 200
+
+@auth_bp.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    current_user_id = get_jwt_identity()
+    claims = get_jwt()
+    role = claims.get("role", "user")
+    return jsonify({"message": f"Bienvenido usuario {current_user_id}, rol: {role}!"})

@@ -2,4 +2,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-from .user_model import User  # ✅ nombre correcto del archivo
+# importa los modelos solo si es necesario al final
+from .auth_model import User
+from .cats_model import Cat
