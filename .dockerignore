@@ -1,0 +1,14 @@
+# Archivos y carpetas que no deben copiarse al contenedor
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+.git
+.gitignore
+data/
+.vscode/
+.idea/
+*.db
+*.sqlite3
