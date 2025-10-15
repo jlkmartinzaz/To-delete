@@ -13,6 +13,7 @@ despliegue y prueba.
   **Método**   **Ruta**         **JWT requerido**   **Roles permitidos**
   POST         /auth/register   No                  None
   POST         /auth/login      No                  None
+  POST         /auth/logout     No                  None
   POST         /auth/refresh    Sí                  user
   GET          /auth/profile    Sí                  user
   GET          /cats/           Sí                  user
