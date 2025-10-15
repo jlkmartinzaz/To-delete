@@ -5,17 +5,10 @@ services:
     build: .
     container_name: cats_api
     ports:
-      - "5000:5000"
-    environment:
-      FLASK_APP: app.py
-      FLASK_RUN_HOST: 0.0.0.0
-      FLASK_ENV: development
-      SECRET_KEY: "JSJ34i6jiew395884204834"
-      JWT_SECRET_KEY: "SNA24fneidw24983939302"
-      SQLALCHEMY_DATABASE_URI: "sqlite:////app/data/database.db"
+      - "5000:5000"  # En producción, considera usar un reverse proxy y no exponer directamente
+    env_file:
+      - .env
     volumes:
-      - .:/app
-      - ./data:/app/data
+      - ./data:/app/data   # Solo montamos la carpeta de datos, no todo el código
     command: flask run --host=0.0.0.0 --port=5000
-    restart: always
-
+    restart: unless-stopped
