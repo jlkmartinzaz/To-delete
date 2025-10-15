@@ -3,7 +3,9 @@
 BASE_URL="http://localhost:5000"
 
 # ----------------------------
+
 # Registrar usuarios
+
 # ----------------------------
 echo "=== Registrando usuarios ==="
 curl -s -X POST "$BASE_URL/auth/register" \
