@@ -14,5 +14,3 @@ data/
 *.sqlite3
 docker-compose.yaml
 docker-compose.yml
-
-
