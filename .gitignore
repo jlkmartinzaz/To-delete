@@ -12,3 +12,4 @@ __pycache__
 .pytest_cache
 instance/
 docker-compose.yaml
+check_privileges.py

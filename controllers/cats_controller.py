@@ -6,13 +6,12 @@ from models import db
 
 cats_bp = Blueprint("cats_bp", __name__)
 
-# 🧩 Todas las rutas protegidas
 @cats_bp.route("/", methods=["GET"])
+@roles_required("user")  # 🔹 agregamos rol explícito
 @jwt_required()
 def list_cats():
     cats = Cat.query.all()
     return jsonify([cat.to_dict() for cat in cats]), 200
-
 
 @cats_bp.route("/", methods=["POST"])
 @roles_required("admin")
@@ -27,7 +26,6 @@ def create_cat():
     db.session.commit()
     return jsonify({"message": "Gato creado correctamente"}), 201
 
-
 @cats_bp.route("/<int:cat_id>", methods=["PUT"])
 @roles_required("admin")
 def update_cat(cat_id):
@@ -39,7 +37,6 @@ def update_cat(cat_id):
     cat.adopted = data.get("adopted", cat.adopted)
     db.session.commit()
     return jsonify({"message": "Gato actualizado correctamente"}), 200
-
 
 @cats_bp.route("/<int:cat_id>", methods=["DELETE"])
 @roles_required("admin")
