@@ -11,3 +11,4 @@ podman-compose.yaml
 __pycache__
 .pytest_cache
 instance/
+docker-compose.yaml

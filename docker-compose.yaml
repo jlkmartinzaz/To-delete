@@ -1,16 +1,21 @@
 version: "3.9"
 
 services:
-  api:
+  cats_api:
     build: .
     container_name: cats_api
     ports:
       - "5000:5000"
     environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=development
-      - JWT_SECRET_KEY=super-secret-jwt
-      - SQLALCHEMY_DATABASE_URI=sqlite:///data/database.db
+      FLASK_APP: app.py
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_ENV: development
+      SECRET_KEY: "JSJ34i6jiew395884204834"
+      JWT_SECRET_KEY: "SNA24fneidw24983939302"
+      SQLALCHEMY_DATABASE_URI: "sqlite:////app/data/database.db"
     volumes:
       - .:/app
+      - ./data:/app/data
     command: flask run --host=0.0.0.0 --port=5000
+    restart: always
+

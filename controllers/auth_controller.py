@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
-from models.auth_model import User
+from models.user_model import User
 from models import db
 import datetime
 
@@ -8,7 +8,7 @@ auth_bp = Blueprint("auth_bp", __name__)
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
@@ -18,41 +18,39 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "El usuario ya existe"}), 400
 
-    new_user = User(email=email)
-    new_user.set_password(password)
-    db.session.add(new_user)
+    user = User(email=email)
+    user.set_password(password)
+    db.session.add(user)
     db.session.commit()
 
-    return jsonify({"message": "Usuario registrado correctamente"}), 201
+    return jsonify({"message": "Usuario creado correctamente"}), 201
 
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
     user = User.query.filter_by(email=email).first()
-
     if not user or not user.check_password(password):
         return jsonify({"error": "Credenciales inválidas"}), 401
 
     expires = datetime.timedelta(hours=1)
     token = create_access_token(
-        identity=str(user.id),
+        identity=user.id,
         additional_claims={"role": user.role},
         expires_delta=expires
     )
+    return jsonify({"access_token": token, "user": user.to_safe_dict()}), 200
 
-    return jsonify({
-        "access_token": token,
-        "user": {"email": user.email, "role": user.role}
-    }), 200
 
-@auth_bp.route("/protected", methods=["GET"])
+@auth_bp.route("/profile", methods=["GET"])
 @jwt_required()
-def protected():
-    current_user_id = get_jwt_identity()
-    claims = get_jwt()
-    role = claims.get("role", "user")
-    return jsonify({"message": f"Bienvenido usuario {current_user_id}, rol: {role}!"})
+def profile():
+    """Ruta protegida, devuelve datos del usuario autenticado"""
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+    return jsonify(user.to_safe_dict()), 200

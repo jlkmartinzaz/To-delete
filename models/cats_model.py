@@ -1,4 +1,3 @@
-from models import db
 from . import db
 
 class Cat(db.Model):
