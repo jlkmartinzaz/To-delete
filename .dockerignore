@@ -12,4 +12,11 @@ data/
 .idea/
 *.db
 *.sqlite3
-
+mysql+pymysql://root:password@mysql:3306/
+venv/
+__pypackages__/
+*.egg-info/
+podman-compose.yaml
+.pytest_cache/
+instance/
+manage_roles.py

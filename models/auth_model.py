@@ -1,16 +1,44 @@
-from werkzeug.security import generate_password_hash, check_password_hash
-from . import db   # ← importante: importa desde el paquete actual, no de models
+from datetime import datetime
+from models.user_model import User
+from middleware.token_blacklist import add_token_to_blacklist
+from flask_jwt_extended import create_access_token, create_refresh_token
 
-class User(db.Model):
-    __tablename__ = "users"
+def register_user(db, email, password, role="user"):
+    """
+    Registra un nuevo usuario.
+    """
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return {"message": "El usuario ya existe."}, 400
 
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(50), default="user")
+    user = User(email=email)
+    user.set_password(password)
+    user.role = role
+    db.session.add(user)
+    db.session.commit()
+    return {"message": "Usuario registrado exitosamente."}, 201
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+def login_user(email, password):
+    """
+    Inicia sesión y devuelve tokens JWT.
+    """
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return {"message": "Credenciales inválidas."}, 401
+
+    access_token = create_access_token(identity={"id": user.id, "role": user.role})
+    refresh_token = create_refresh_token(identity={"id": user.id, "role": user.role})
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {"email": user.email, "role": user.role}
+    }, 200
+
+
+def logout_user(jti):
+    """
+    Revoca el token actual agregándolo a la lista negra.
+    """
+    add_token_to_blacklist(jti)
+    return {"message": "Sesión cerrada correctamente."}, 200

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login / Registro</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
+.container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: 300px;
+}
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+button {
+  width: 48%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-login { background-color: #4CAF50; color: white; }
+.btn-register { background-color: #2196F3; color: white; float: right; }
+.msg {
+  margin-top: 10px;
+  text-align: center;
+  color: red;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Iniciar sesión / Registro</h2>
+<input type="email" id="email" placeholder="Email" required>
+<input type="password" id="password" placeholder="Contraseña" required>
+<div>
+<button class="btn-login" onclick="login()">Login</button>
+<button class="btn-register" onclick="goToRegister()">Register</button>
+</div>
+<div class="msg" id="msg"></div>
+</div>
+
+<script>
+const API_BASE = "{{ api_base }}"; // Flask inyecta la URL del backend
+
+function goToRegister() {
+    window.location.href = "/register.html";
+}
+
+async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const msg = document.getElementById("msg");
+    msg.textContent = "";
+
+    try {
+        const res = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if(res.ok) {
+            msg.style.color = "green";
+            msg.textContent = "Login exitoso!";
+            // Guardar tokens
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("refresh_token", data.refresh_token);
+            // Redirigir a la página de videos
+            window.location.href = "/videos.html";
+        } else {
+            msg.style.color = "red";
+            msg.textContent = data.error || data.message;
+        }
+    } catch(err) {
+        msg.style.color = "red";
+        msg.textContent = "Error de conexión";
+        console.error(err);
+    }
+}
+</script>
+</body>
+</html>

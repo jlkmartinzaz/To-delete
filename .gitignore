@@ -12,4 +12,8 @@ __pycache__
 .pytest_cache
 instance/
 check_privileges.py
-data/
+instance/
+mysql+pymysql://root:password@mysql:3306/
+admin_test.py
+admin_test.sh
+manage_roles.py
